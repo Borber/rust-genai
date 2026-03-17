@@ -68,6 +68,20 @@ pub struct ChatOptions {
 
 	/// Additional HTTP headers to include with the request.
 	pub extra_headers: Option<Headers>,
+
+	// -- OpenAI prompt cache options
+	/// Explicit prompt cache key for OpenAI keyed caching.
+	///
+	/// When set, the OpenAI / OpenAIResp adapters pass it as top-level
+	/// `prompt_cache_key` in the request payload. Ignored by other providers.
+	pub prompt_cache_key: Option<String>,
+
+	/// Prompt cache retention policy for OpenAI keyed caching.
+	///
+	/// Valid values (per OpenAI docs): `"in_memory"` / `"24h"`.
+	/// When set, the OpenAI / OpenAIResp adapters pass it as top-level
+	/// `prompt_cache_retention` in the request payload. Ignored by other providers.
+	pub prompt_cache_retention: Option<String>,
 }
 
 /// Chainable Setters
@@ -165,6 +179,18 @@ impl ChatOptions {
 	/// Adds extra HTTP headers.
 	pub fn with_extra_headers(mut self, headers: impl Into<Headers>) -> Self {
 		self.extra_headers = Some(headers.into());
+		self
+	}
+
+	/// Sets the OpenAI prompt cache key.
+	pub fn with_prompt_cache_key(mut self, key: impl Into<String>) -> Self {
+		self.prompt_cache_key = Some(key.into());
+		self
+	}
+
+	/// Sets the OpenAI prompt cache retention policy (e.g. `"in_memory"`, `"24h"`).
+	pub fn with_prompt_cache_retention(mut self, retention: impl Into<String>) -> Self {
+		self.prompt_cache_retention = Some(retention.into());
 		self
 	}
 
@@ -545,6 +571,18 @@ impl ChatOptionsSet<'_, '_> {
 		self.chat
 			.and_then(|chat| chat.extra_headers.as_ref())
 			.or_else(|| self.client.and_then(|client| client.extra_headers.as_ref()))
+	}
+
+	pub fn prompt_cache_key(&self) -> Option<&str> {
+		self.chat
+			.and_then(|chat| chat.prompt_cache_key.as_deref())
+			.or_else(|| self.client.and_then(|client| client.prompt_cache_key.as_deref()))
+	}
+
+	pub fn prompt_cache_retention(&self) -> Option<&str> {
+		self.chat
+			.and_then(|chat| chat.prompt_cache_retention.as_deref())
+			.or_else(|| self.client.and_then(|client| client.prompt_cache_retention.as_deref()))
 	}
 
 	/// Returns true only if there is a ChatResponseFormat::JsonMode

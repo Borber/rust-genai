@@ -184,6 +184,14 @@ impl Adapter for OpenAIRespAdapter {
 			payload.x_insert("seed", seed)?;
 		}
 
+		// -- OpenAI prompt cache options
+		if let Some(prompt_cache_key) = chat_options.prompt_cache_key() {
+			payload.x_insert("prompt_cache_key", prompt_cache_key)?;
+		}
+		if let Some(prompt_cache_retention) = chat_options.prompt_cache_retention() {
+			payload.x_insert("prompt_cache_retention", prompt_cache_retention)?;
+		}
+
 		Ok(WebRequestData { url, headers, payload })
 	}
 
